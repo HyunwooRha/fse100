@@ -2,6 +2,7 @@ curx = 6;
 cury = 6;
 
 blockDistance = 10;
+stepDistance  = 1;
 
 test1 = true;
 test2 = true;
@@ -69,12 +70,19 @@ end
 
 % move forward one space if possible
 function goForward()
+    toggleRed = false;
     if (!getNorth):
         cury = cury + 1;
-        while (!getRed && counter <= blockDistance):
-            counter = counter + 1;
-            % move forward a tiny bit
-            
+        for (i = 1:stepSize:blockDistance):
+            % need to change the 1 to the correct color so condition is for "red"
+            if (getColor == 1 || toggleRed == true):
+                toggleRed = true;
+                % code to break for a certain amount of time
+
+            else
+                % move forward 1 stepsize
+
+            end
         end
 
     end
