@@ -29,7 +29,7 @@ function saveinfo()
     map(curx, cury).c = getColor;
 end
 
-% make a class called cells with 5 parameters in matlab
+% cells is a node based system to organize the maze. this will be used for the pathfinding algorithm
 classdef cells < matlab.System
     properties
         n
@@ -44,36 +44,40 @@ classdef cells < matlab.System
     end
 end
 
+% in the end, path will be a list of coordinates that the robot will follow as the solution
+path = [];
 
-graph = [];
+% depth first search searches one path until it reaches a dead end, then backtracks and searches another path, until it finds the right path
 function d = dfs(x, y)
+    % marks current node as visited
     map(x, y).visited = true;
+    % gets a list of all possible paths from a node
     possiblepaths = [];
-    if map(x, y).n == true && map(x, y - 1).visited == false
+    if map(x, y).n == true && map(x, y + 1).visited == false
         possiblepaths = [possiblepaths, [x,y+1]];
     end
     if map(x, y).e == true && map(x + 1, cury).visited == false
         possiblepaths = [possiblepaths, [x+1, cury]];
     end
-    if map(x, y).s == true && map(x, y + 1).visited == false
+    if map(x, y).s == true && map(x, y - 1).visited == false
         possiblepaths = [possiblepaths, [x, y-1]];
     end
     if map(x, y).w == true && map(x - 1, y).visited == false
         possiblepaths = [possiblepaths, [x-1, y]];
     end
+    % if there are no possible paths, then the robot has reached a dead end, so it backtracks
     if isempty(possiblepaths)
+        % deletes last element of path since it is a dead end
+        path(end) = [];
+        % backtrack
         return
-    else
-        graph = [graph, [possiblepaths]];
     end
-    if isempty(possiblepaths)
-        
-    end
-    graph = [graph, possiblepaths];
+    % recursively calls dfs to eventually find the right path
     for (i = 1:length(possiblepaths))
-        
+        % i hate recusion
+        path = [path, possiblepaths(i-1)];
+        % dfs(???);
     end
-
 end
 
 % always follows the right wall
