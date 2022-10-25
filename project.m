@@ -76,7 +76,7 @@ function d = dfs(x, y)
     for (i = 1:length(possiblepaths))
         % i hate recusion
         path = [path, possiblepaths(i-1)];
-        % dfs(???);
+        dfs(possiblepaths(i)(0), possiblepaths(i)(1));
     end
 end
 
