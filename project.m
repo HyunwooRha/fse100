@@ -10,6 +10,9 @@ test2 = true;
 pickedup = false;
 droppedoff = false;
 
+leftwheel = 'A';
+rightwheel = 'D';
+
 map(1:11, 1:11) = cells;
 
 while test1
@@ -34,10 +37,43 @@ classdef cells < matlab.System
         s
         w
         c
+        visited = false;
     end
     methods
         
     end
+end
+
+
+graph = [];
+function d = dfs(x, y)
+    map(x, y).visited = true;
+    possiblepaths = [];
+    if map(x, y).n == true && map(x, y - 1).visited == false
+        possiblepaths = [possiblepaths, [x,y+1]];
+    end
+    if map(x, y).e == true && map(x + 1, cury).visited == false
+        possiblepaths = [possiblepaths, [x+1, cury]];
+    end
+    if map(x, y).s == true && map(x, y + 1).visited == false
+        possiblepaths = [possiblepaths, [x, y-1]];
+    end
+    if map(x, y).w == true && map(x - 1, y).visited == false
+        possiblepaths = [possiblepaths, [x-1, y]];
+    end
+    if isempty(possiblepaths)
+        return
+    else
+        graph = [graph, [possiblepaths]];
+    end
+    if isempty(possiblepaths)
+        
+    end
+    graph = [graph, possiblepaths];
+    for (i = 1:length(possiblepaths))
+        
+    end
+
 end
 
 % always follows the right wall
