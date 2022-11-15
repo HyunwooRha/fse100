@@ -10,9 +10,10 @@ test2 = true;
 pickedup = false;
 droppedoff = false;
 
-function getPath()
+function list = getPath()
     % return a list of all connections
     % aka spin around to see if there are any connections
+    return list;
 end
 
 function checkColors()
