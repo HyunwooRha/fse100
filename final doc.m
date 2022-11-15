@@ -154,6 +154,8 @@ while test1
     turn(turnDirection);
     current = current + 1;
     goForward();
-
+    if getColor == 4
+        test1 = false;
+    end
 end
 test1 = false
