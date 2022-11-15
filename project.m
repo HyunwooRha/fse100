@@ -48,35 +48,25 @@ end
 path = [];
 
 % depth first search searches one path until it reaches a dead end, then backtracks and searches another path, until it finds the right path
-function d = dfs(x, y)
+function dfs(x, y)
     % marks current node as visited
     map(x, y).visited = true;
     % gets a list of all possible paths from a node
-    possiblepaths = [];
     if map(x, y).n == true && map(x, y + 1).visited == false
-        possiblepaths = [possiblepaths, [x,y+1]];
+        path = [path, dfs(x, y + 1)];
+    else if map(x, y).e == true && map(x + 1, cury).visited == false
+        path = [path, dfs(x + 1, y)];
+    else if map(x, y).s == true && map(x, y - 1).visited == false
+        path = [path, dfs(x, y - 1)];
+    else if map(x, y).w == true && map(x - 1, y).visited == false
+        path = [path, dfs(x - 1, y)];
     end
-    if map(x, y).e == true && map(x + 1, cury).visited == false
-        possiblepaths = [possiblepaths, [x+1, cury]];
-    end
-    if map(x, y).s == true && map(x, y - 1).visited == false
-        possiblepaths = [possiblepaths, [x, y-1]];
-    end
-    if map(x, y).w == true && map(x - 1, y).visited == false
-        possiblepaths = [possiblepaths, [x-1, y]];
-    end
-    % if there are no possible paths, then the robot has reached a dead end, so it backtracks
-    if isempty(possiblepaths)
-        % deletes last element of path since it is a dead end
-        path(end) = [];
-        % backtrack
-        return
-    end
-    % recursively calls dfs to eventually find the right path
-    for (i = 1:length(possiblepaths))
-        % i hate recusion
-        path = [path, possiblepaths(i-1)];
-        dfs(possiblepaths(i)(0), possiblepaths(i)(1));
+    
+    % if the current node is the end node, return the path
+    if ([x, y] == fin)
+        return path;
+    else
+        path[end] = [];
     end
 end
 
