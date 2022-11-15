@@ -100,11 +100,11 @@ function checkColors()
 end
 
 function d = turnDirection()
-    if (!getRight):
+    if (!getRight)
         d = 2;
-    elseif (!getFront):
+    elseif (!getFront)
         d = 1;
-    else:
+    else
         d = 4;
     end
     return d;
@@ -132,11 +132,11 @@ end
 
 function goForward()
     toggleRed = false;
-    if (!getNorth):
+    if (!getNorth)
         cury = cury + 1;
-        for (i = 1:stepSize:blockDistance):
+        for (i = 1:stepSize:blockDistance)
             % need to change the 1 to the correct color so condition is for "red"
-            if (getColor == 5):
+            if (getColor == 5)
                 pause(2);
                 brick.MoveMotor('A', 500)
                 brick.MoveMotor('D', 500)
