@@ -2,6 +2,8 @@ brick = ConnectBrick('EVAL');
 brick.SetColorMode(3,2);
 
 %%
+global key;
+InitKeyboard();
 
 defaultSpeed = 100;
 
@@ -9,10 +11,6 @@ spinLength = 2;
 spinSpeed = 30;
 
 wallDetectionDistance = 20;
-
-
-global key;
-InitKeyboard();
 
 current = 0;
 graph  = containers.Map(current, getPath());
@@ -29,7 +27,7 @@ droppedoff = false;
 
 while test1 == true
     checkColors();
-    graph[current] = getPath();
+    graph(getPath()) = current;
     turn(turnDirection);
     current = current + 1;
     goForward();
@@ -44,7 +42,6 @@ function bool = getFront()
     brick.MoveMotor('A', -spinSpeed);
     pause(spinLength);
     bool = getRight();
-    return (bool);
 end
 
 function bool = getLeft()
@@ -54,7 +51,6 @@ function bool = getLeft()
     else
         bool = false;
     end
-    return(bool);
 end
 function bool = getRight()
     distance = brick.UltrasonicDist(1);
@@ -63,11 +59,9 @@ function bool = getRight()
     else
         bool = false;
     end    
-    return(bool);
 end
 function c = getColor()
     c = brick.ColorCode(4);
-    return(c);
 end
 
 
@@ -84,7 +78,6 @@ function list = getPath()
     if getFront()
         list = [list, 'F'];
     end
-    return list;
 end
 
 
@@ -115,31 +108,32 @@ function d = turnDirection()
     else
         d = 4;
     end
-    return d;
 end
 
-function includes(key, list)
+function bool = includes(key, list)
     for i = 0:length(list)
-        if key == list(i)
-            return true;
+        if key == list[]
+            bool = true;
         end
     end
-    return false;
+    bool = false;
 end
 
-function path = find_path(graph, start, finish, paths=[])
-    path = paths + [start]
+function b = find_path(graph, start, finish, paths)
+    path = paths + [start];
     if start == finish
-        return path
+        b = path;
     end
     if not graph.has_key(start)
         return;
     end
-    for a = 0:graph[start].length
-        if !(includes(graph[start][a], path))
-            newpath = find_path(graph, a, finish, path)
-            if newpath
-                return newpath
+    for a = 0:length(values(graph, start))
+        temp = (graph(start));
+        disp(temp(a))
+        if includes(temp(a), path) == false
+            newpath = find_path(graph, a, finish, path);
+            if ifempty(newpath) == false
+                b = newpath;
             end
         end
     end
