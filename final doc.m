@@ -3,14 +3,12 @@ brick.SetColorMode(3,2);
 
 %%
 
-blockDistance = 10;
-stepDistance  = 1;
 defaultSpeed = 100;
+spinLength = 2;
 
 wallDetectionDistance = 20;
 
 spinSpeed = 30;
-spinDelay = 0.1;
 
 global key;
 InitKeyboard();
@@ -29,15 +27,11 @@ pickedup = false;
 droppedoff = false;
 
 
-function getFront()
-    totalSpin = 0;
-    while totalSpin > 0
-        brick.MoveMotor('D', spinSpeed);
-        brick.MoveMotor('A', -spinSpeed);
-        totalSpin = totalSpin - spinDelay;
-        pause(spinDelay);
-    end
-    
+function bool = getFront()
+    brick.MoveMotor('D', spinSpeed);
+    brick.MoveMotor('A', -spinSpeed);
+    pause(spinLength);
+    return getRight();
 end
 
 function bool = getLeft()
@@ -111,6 +105,14 @@ function d = turnDirection()
     return d;
 end
 
+function includes(key, list)
+    for i = 0:length(list)
+        if key == list(i)
+            return true;
+        end
+    end
+    return false;
+end
 
 function path = find_path(graph, start, finish, paths=[])
     path = paths + [start]
@@ -120,32 +122,38 @@ function path = find_path(graph, start, finish, paths=[])
     if not graph.has_key(start)
         return None
     end
-    for node in graph[start]
-        if node not in path
-            newpath = find_path(graph, node, finish, path)
+    for a = 0:graph[start].length
+        if !(includes(graph[start][a], path))
+            newpath = find_path(graph, a, finish, path)
             if newpath
                 return newpath
-            end
-        end
-    end
+    % original code (doesn't work but kept for the idea)
+    % for node in graph[start]
+    %     if node not in path
+    %         newpath = find_path(graph, node, finish, path);
+    %         if newpath
+    %             return newpath
+    %         end
+    %     end
+    % end
     return None
 end
 
 function goForward()
-    toggleRed = false;
-    if (!getNorth)
-        cury = cury + 1;
-        for (i = 1:stepSize:blockDistance)
-            % need to change the 1 to the correct color so condition is for "red"
-            if (getColor == 5)
+    if (getNorth == false)
+        totalTime = 2;
+        for (i = 0:totalTime)
+            if (getColor() == 5)
                 pause(2);
-                brick.MoveMotor('A', 500)
-                brick.MoveMotor('D', 500)
+                brick.MoveMotor('A', defaultSpeed);
+                brick.MoveMotor('D', defaultSpeed);
+                pause(1);                    
             end
-            brick.MoveMotor('A', defaultSpeed)
-            brick.MoveMotor('D', defaultSpeed)
+            brick.MoveMotor('A', defaultSpeed);
+            brick.MoveMotor('D', defaultSpeed);
+            pause(0.1);
         end
-
+        brick.StopAllMotors();
     end
 end
 
@@ -155,8 +163,8 @@ while test1
     turn(turnDirection);
     current = current + 1;
     goForward();
-    if getColor == 4
+    if getColor() == 4
         test1 = false;
     end
 end
-test1 = false
+test1 = false;
