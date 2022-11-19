@@ -4,11 +4,12 @@ brick.SetColorMode(3,2);
 %%
 
 defaultSpeed = 100;
+
 spinLength = 2;
+spinSpeed = 30;
 
 wallDetectionDistance = 20;
 
-spinSpeed = 30;
 
 global key;
 InitKeyboard();
@@ -154,6 +155,26 @@ function goForward()
             pause(0.1);
         end
         brick.StopAllMotors();
+    end
+end
+
+function turn(direction)
+    if (direction == 1)
+        brick.MoveMotor('A', -spinSpeed);
+        brick.MoveMotor('D', spinSpeed);
+        pause(spinLength);
+    elseif (direction == 2)
+        brick.MoveMotor('A', spinSpeed);
+        brick.MoveMotor('D', -spinSpeed);
+        pause(spinLength);
+    elseif (direction == 3)
+        brick.MoveMotor('A', -spinSpeed);
+        brick.MoveMotor('D', spinSpeed);
+        pause(spinLength*2);
+    elseif (direction == 4)
+        brick.MoveMotor('A', spinSpeed);
+        brick.MoveMotor('D', -spinSpeed);
+        pause(spinLength*2);
     end
 end
 
