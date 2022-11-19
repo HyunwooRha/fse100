@@ -32,7 +32,8 @@ function bool = getFront()
     brick.MoveMotor('D', spinSpeed);
     brick.MoveMotor('A', -spinSpeed);
     pause(spinLength);
-    return getRight();
+    bool = getRight();
+    return (bool);
 end
 
 function bool = getLeft()
