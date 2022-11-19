@@ -27,6 +27,17 @@ test2 = true;
 pickedup = false;
 droppedoff = false;
 
+while test1 == true
+    checkColors();
+    graph[current] = getPath();
+    turn(turnDirection);
+    current = current + 1;
+    goForward();
+    if getColor() == 4
+        test1 = false;
+    end
+end
+test1 = false;
 
 function bool = getFront()
     brick.MoveMotor('D', spinSpeed);
@@ -129,6 +140,9 @@ function path = find_path(graph, start, finish, paths=[])
             newpath = find_path(graph, a, finish, path)
             if newpath
                 return newpath
+            end
+        end
+    end
     % original code (doesn't work but kept for the idea)
     % for node in graph[start]
     %     if node not in path
@@ -178,15 +192,3 @@ function turn(direction)
         pause(spinLength*2);
     end
 end
-
-while test1
-    checkColors();
-    graph[current] = getPath();
-    turn(turnDirection);
-    current = current + 1;
-    goForward();
-    if getColor() == 4
-        test1 = false;
-    end
-end
-test1 = false;
