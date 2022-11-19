@@ -67,6 +67,7 @@ end
 function list = getPath()
     % return a list of all connections
     % aka spin around to see if there are any connections
+    list = [];
     if getLeft()
         list = [list, 'L'];
     end
@@ -100,9 +101,9 @@ function checkColors()
 end
 
 function d = turnDirection()
-    if (!getRight)
+    if (getRight == false)
         d = 2;
-    elseif (!getFront)
+    elseif (getFront == false)
         d = 1;
     else
         d = 4;
