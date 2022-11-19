@@ -121,7 +121,7 @@ function path = find_path(graph, start, finish, paths=[])
         return path
     end
     if not graph.has_key(start)
-        return None
+        return;
     end
     for a = 0:graph[start].length
         if !(includes(graph[start][a], path))
@@ -137,7 +137,7 @@ function path = find_path(graph, start, finish, paths=[])
     %         end
     %     end
     % end
-    return None
+    return;
 end
 
 function goForward()
