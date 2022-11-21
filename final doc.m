@@ -181,30 +181,33 @@ function bool = includes(key, list)
     end
 end
 
-<<<<<<< HEAD
 function b = find_path(graph, start, finish, path)
+    toggle = true;    
     path = [path, start];
-=======
-function b = find_path(graph, start, finish, paths)
-    path = paths + [start];
->>>>>>> parent of 3112f4a (comments)
     if start == finish
-        b = path;
-    else
-        for i = 1:length(graph(start))
-            a = graph(start)
-            if includes(a(i), path) == false
-                
-                b = find_path(graph, a(i), finish, path);
+        toggle = false;
+    end
+    if toggle == true
+        if graph.isKey(start)
+            return;
+        end
+        shortest = "";
+        for a = 1:length(graph(start))
+            temp = graph(start);
+            node = temp(a);
+            if includes(node, path)
+                newpath = find_path(graph, node, finish, path);
+                if newpath
+                    if shortest || length(newpath) < length(shortest)
+                        shortest = newpath;
+                    end
+                end
             end
         end
     end
+    b = path
 end
 
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of 3112f4a (comments)
 function goForward()
     if (getFront() == false)
         for (i = 0:forwardTime)
