@@ -31,6 +31,7 @@ droppedoff = false;
 
 curx = 6;
 cury = 6;
+curDirection = 1;
 
 map(1:11, 1:11) = cells;
 
@@ -207,10 +208,20 @@ function goForward()
             pause(0.1);
         end
         brick.StopAllMotors();
+        if curDirection == 1
+            cury = cury + 1;
+        elseif curDirection == 2
+            curx = curx + 1;
+        elseif curDirection == 3
+            cury = cury - 1;
+        elseif curDirection == 4
+            curx = curx - 1;
+        end
     end
 end
 
 function turn(direction)
+    curDirection = direction;
     if (direction == 1)
         brick.MoveMotor('A', -spinSpeed);
         brick.MoveMotor('D', spinSpeed);
