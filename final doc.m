@@ -1,91 +1,117 @@
+% setup
 brick = ConnectBrick('EVAL');
 brick.SetColorMode(3,2);
-%%
-graph = containers.Map(1, [2, 3]);
-graph(2) = [3, 4];
-graph(3) = [4];
-graph(4) = [3];
-graph(5) = [6];
-graph(6) = [3];
-path=[];
-find_path(graph, 1, 4, path)
 
 %%
+
+% sets up the key inputs
 global key;
 InitKeyboard();
 
+% default moving speed for moters
 defaultSpeed = 100;
 
+% how long the robot will move forward for
 % note that this is done with the 0.1 seconds (i think)
 forwardTime = 30;
+
+% how long the robot will keep going forward to pass through the red
 gapRed = 0.1;
 
+% how long to spin for a 90 degree turn
 spinLength = 2;
+% how fast to spin for a 90 degree turn
 spinSpeed = 30;
 
-wallDetectionDistance = 20;
+% cutoff distance when checking for a wall using distance sensors
+wallDetectionDistance = 0.2;
 
+% current is used as a counter variable
+% used to label a 'block' as a number based on the order it was visited
 current = 0;
+
+% sets up a dictionary/hashmap to store the blocks
+% this will be updated and filled in at once instead of being filled in proactively
 graph  = containers.Map();
 
-green = 0;
+% keeps track of where each color is based on block number(block number is kept track by 'current' variabel)
+green = current;
 blue;
 yellow;
 
+% used for while loops so that the same code will be run multiple times
+% NOTE THAT THERE WILL BE MORE 'TEST' VARIABLES BECAUSE NOT EVERYTHING CAN BE DONE IN ONE WHILE LOOP
 test1 = true;
 test2 = true;
 
+% used to keep track of the pickup and dropped off state of the robot
 pickedup = false;
 droppedoff = false;
 
+% current block position of the robot. this is updated proactively
 curx = 6;
 cury = 6;
+% current direction the robot is facing. this is updated proactively
 curDirection = 1;
 
+% creates an 11x11 matrix as a map of the maze
+% this is used to update 'graph' variable
 map(1:11, 1:11) = cells;
 
+
+% main loops
 while test1 == true
+    % we check the color of the current block and update the variables accordingly
     checkColors();
+    % saves the current block's info into the map matrix
     saveinfo();
-    % graph(current) = getPath();
+    % turns the robot to face it so it follows the right wall
     turn(turnDirection);
-    current = current + 1;
+    % robot moves forward and adds the counter variable 'current' by 1
     goForward();
+    current = current + 1;
+    % checks if the robot has reached the requirement for this test
     if getColor() == 4
         test1 = false;
     end
 end
-test1 = false;
 
-
-
+% updates the 'graph' variable using the 'map' matrix 
 function convert_to_graph()
+    % the idea is that we go through each layer of the matrix and update each index
+    % we repeat this for 11 times because there are 11 layers
     for i = 1:11
         for j = 1:11
-            if map(i,j).n == 1
+            % these if statements check if there is a wall on each side of the current index
+            % it then updates the 'graph' variable
+            if map(i,j).n == false
                 graph(map(i,j).place) = [i,j+1];
             end
-            if map(i,j).e == 1
+            if map(i,j).e == false
                 graph(map(i,j).place) = [i+1,j];
             end
-            if map(i,j).s == 1
+            if map(i,j).s == false
                 graph(map(i,j).place) = [i,j-1];
             end
-            if map(i,j).w == 1
+            if map(i,j).w == false
                 graph(map(i,j).place) = [i-1,j];
             end
         end
     end
 end
 
+% code to save the current block's info into the map matrix
 function saveinfo()
+    % the place attribute is equal to current(counter variable) because we need a way to create a key for the dictionary/hashmap
     map(curx,cury).place = current;
     map(curx, cury).n = getFront();
+    % we know that south must be true because the robot can only move forward so back must be open
     map(curx, cury).s = true;
     map(curx, cury).e = getRight();
     map(curx, cury).w = getLeft();
 end
 
+% code to check if there is a wall on a certain side of the robot using 'wallDetectionDistance' variable as the threshold
 function bool = getFront()
     distance = brick.UltrasonicDist(3);
     if distance < wallDetectionDistance
@@ -114,27 +140,15 @@ function bool = getLeft()
     end    
 end
 
+
+% returns the color of the current block
 function c = getColor()
     c = brick.ColorCode(4);
 end
 
 
-function list = getPath()
-    % returns a list of connected nodes
-    temp = [];
-    if getFront() == false
-        temp = [temp, "front"];
-    end
-    if getRight() == false
-        temp = [temp, "right"];
-    end
-    if getLeft() == false
-        temp = [temp, "left"];
-    end
-    list = temp;
-end
-
-
+% checks of the current block is a certain color and updates the variables accordingly
+% also checks if the current block is red so that it stops right away. we might not need this 
 function checkColors()
     % check for colors: red, green, blue
     % need to make sure we can break test1 loop by changing the boolean
@@ -147,6 +161,7 @@ function checkColors()
         pause(1);
         brick.StopAllMotors();
     end
+
     if test1 == true
         if getColor == 2
             blue = current;
@@ -157,16 +172,20 @@ function checkColors()
     end
 end
 
+% returns the direction the robot should turn to follow the right wall
+% this doesn't actually move the robot in any way
 function d = turnDirection()
-    if (getRight == false)
+    if (getRight() == false)
         d = 2;
-    elseif (getFront == false)
+    elseif (getFront() == false)
         d = 1;
     else
         d = 4;
     end
 end
 
+% function to check if a key is in a list
+% used for find_path algorithm
 function bool = includes(key, list)
     temp = false;
     for i = 0:length(list)
@@ -181,33 +200,32 @@ function bool = includes(key, list)
     end
 end
 
-function b = find_path(graph, start, finish, path)
-    toggle = true;    
-    path = [path, start];
+% function to find the path from the start to the end
+% returns b as a list format
+function b = find_path(graph, start, finish, paths)
+    % i cannot comment much on this because i don't understand it either.
+    path = paths + [start];
     if start == finish
-        toggle = false;
+        b = path;
     end
-    if toggle == true
-        if graph.isKey(start)
-            return;
-        end
-        shortest = "";
-        for a = 1:length(graph(start))
-            temp = graph(start);
-            node = temp(a);
-            if includes(node, path)
-                newpath = find_path(graph, node, finish, path);
-                if newpath
-                    if shortest || length(newpath) < length(shortest)
-                        shortest = newpath;
-                    end
-                end
+    if not graph.has_key(start)
+        return;
+    end
+    for a = 0:length(values(graph, start))
+        temp = (graph(start));
+        disp(temp(a))
+        if includes(temp(a), path) == false
+            newpath = find_path(graph, a, finish, path=[]);
+            if ifempty(newpath) == false
+                b = newpath;
             end
         end
     end
-    b = path
+    return;
 end
 
+% makes the robot go forward as long as there isn't red
+% also updates the 'curx' and 'cury' variables based on the direction it faced before it moved forward
 function goForward()
     if (getFront() == false)
         for (i = 0:forwardTime)
@@ -223,6 +241,8 @@ function goForward()
             pause(0.1);
         end
         brick.StopAllMotors();
+
+        % updates 'curx' and 'cury' variables
         if curDirection == 1
             cury = cury + 1;
         elseif curDirection == 2
@@ -235,6 +255,8 @@ function goForward()
     end
 end
 
+% turns the robot to a certain direction with the parameter 'direction'
+% 1 is north, 2 is east, 3 is south, 4 is west
 function turn(direction)
     curDirection = direction;
     if (direction == 1)
