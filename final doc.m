@@ -7,13 +7,17 @@ InitKeyboard();
 
 defaultSpeed = 100;
 
+% note that this is done with the 0.1 seconds (i think)
+forwardTime = 30;
+gapRed = 0.1;
+
 spinLength = 2;
 spinSpeed = 30;
 
 wallDetectionDistance = 20;
 
 current = 0;
-graph  = containers.Map(current, getPath());
+graph  = containers.Map();
 
 green = 0;
 blue;
@@ -25,9 +29,15 @@ test2 = true;
 pickedup = false;
 droppedoff = false;
 
+curx = 6;
+cury = 6;
+
+map(1:11, 1:11) = cells;
+
 while test1 == true
     checkColors();
-    graph(getPath()) = current;
+    saveinfo();
+    % graph(current) = getPath();
     turn(turnDirection);
     current = current + 1;
     goForward();
@@ -37,14 +47,36 @@ while test1 == true
 end
 test1 = false;
 
-function bool = getFront()
-    brick.MoveMotor('D', spinSpeed);
-    brick.MoveMotor('A', -spinSpeed);
-    pause(spinLength);
-    bool = getRight();
+
+
+function convert_to_graph()
+    for i = 1:11
+        for j = 1:11
+            if map(i,j).n == 1
+                graph(map(i,j).place) = [i,j+1];
+            end
+            if map(i,j).e == 1
+                graph(map(i,j).place) = [i+1,j];
+            end
+            if map(i,j).s == 1
+                graph(map(i,j).place) = [i,j-1];
+            end
+            if map(i,j).w == 1
+                graph(map(i,j).place) = [i-1,j];
+            end
+        end
+    end
 end
 
-function bool = getLeft()
+function saveinfo()
+    map(curx,cury).place = current;
+    map(curx, cury).n = getFront();
+    map(curx, cury).s = true;
+    map(curx, cury).e = getRight();
+    map(curx, cury).w = getLeft();
+end
+
+function bool = getFront()
     distance = brick.UltrasonicDist(3);
     if distance < wallDetectionDistance
         bool = true;
@@ -52,6 +84,7 @@ function bool = getLeft()
         bool = false;
     end
 end
+
 function bool = getRight()
     distance = brick.UltrasonicDist(1);
     if distance < wallDetectionDistance
@@ -60,24 +93,35 @@ function bool = getRight()
         bool = false;
     end    
 end
+
+function bool = getLeft()
+    turn(3);
+    distance = brick.UltrasonicDist(3);
+    if distance < wallDetectionDistance
+        bool = true;
+    else
+        bool = false;
+    end    
+end
+
 function c = getColor()
     c = brick.ColorCode(4);
 end
 
 
 function list = getPath()
-    % return a list of all connections
-    % aka spin around to see if there are any connections
-    list = [];
-    if getLeft()
-        list = [list, 'L'];
+    % returns a list of connected nodes
+    temp = [];
+    if getFront() == false
+        temp = [temp, "front"];
     end
-    if getRight()
-        list = [list, 'R'];
+    if getRight() == false
+        temp = [temp, "right"];
     end
-    if getFront()
-        list = [list, 'F'];
+    if getLeft() == false
+        temp = [temp, "left"];
     end
+    list = temp;
 end
 
 
@@ -86,9 +130,12 @@ function checkColors()
     % need to make sure we can break test1 loop by changing the boolean
     % also need to make sure finish is set to current on 
     if getColor == 5
+        brick.StopAllMotors();
+        pause(2);
+        brick.MoveMotor('A', defaultSpeed);
+        brick.MoveMotor('D', defaultSpeed);
         pause(1);
-        brick.MoveMotor('A', 500)
-        brick.MoveMotor('D', 500)
+        brick.StopAllMotors();
     end
     if test1 == true
         if getColor == 2
@@ -111,12 +158,17 @@ function d = turnDirection()
 end
 
 function bool = includes(key, list)
+    temp = false;
     for i = 0:length(list)
-        if key == list[]
-            bool = true;
+        if key == list[i]
+            temp = true;
         end
     end
-    bool = false;
+    if temp == true
+        bool = true;
+    else
+        bool = false;
+    end
 end
 
 function b = find_path(graph, start, finish, paths)
@@ -131,33 +183,24 @@ function b = find_path(graph, start, finish, paths)
         temp = (graph(start));
         disp(temp(a))
         if includes(temp(a), path) == false
-            newpath = find_path(graph, a, finish, path);
+            newpath = find_path(graph, a, finish, path=[]);
             if ifempty(newpath) == false
                 b = newpath;
             end
         end
     end
-    % original code (doesn't work but kept for the idea)
-    % for node in graph[start]
-    %     if node not in path
-    %         newpath = find_path(graph, node, finish, path);
-    %         if newpath
-    %             return newpath
-    %         end
-    %     end
-    % end
     return;
 end
 
 function goForward()
-    if (getNorth == false)
-        totalTime = 2;
-        for (i = 0:totalTime)
+    if (getFront() == false)
+        for (i = 0:forwardTime)
             if (getColor() == 5)
+                brick.StopAllMotors();
                 pause(2);
                 brick.MoveMotor('A', defaultSpeed);
                 brick.MoveMotor('D', defaultSpeed);
-                pause(1);                    
+                pause(gapRed);
             end
             brick.MoveMotor('A', defaultSpeed);
             brick.MoveMotor('D', defaultSpeed);
@@ -171,18 +214,16 @@ function turn(direction)
     if (direction == 1)
         brick.MoveMotor('A', -spinSpeed);
         brick.MoveMotor('D', spinSpeed);
-        pause(spinLength);
     elseif (direction == 2)
         brick.MoveMotor('A', spinSpeed);
         brick.MoveMotor('D', -spinSpeed);
-        pause(spinLength);
     elseif (direction == 3)
         brick.MoveMotor('A', -spinSpeed);
         brick.MoveMotor('D', spinSpeed);
-        pause(spinLength*2);
     elseif (direction == 4)
         brick.MoveMotor('A', spinSpeed);
         brick.MoveMotor('D', -spinSpeed);
-        pause(spinLength*2);
     end
+    pause(spinLength)
+    brick.StopAllMotors();
 end
