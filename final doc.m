@@ -1,7 +1,15 @@
 % setup
 brick = ConnectBrick('EVAL');
 brick.SetColorMode(3,2);
-
+%%
+graph = containers.Map(1, [2, 3]);
+graph(2) = [3, 4];
+graph(3) = [4];
+graph(4) = [3];
+graph(5) = [6];
+graph(6) = [3];
+path=[];
+find_path(graph, 1, 4, path)
 %%
 
 % sets up the key inputs
@@ -76,25 +84,34 @@ while test1 == true
     end
 end
 
+function checkrepeats(i, j, x, y)
+    for i = 1:length(graph())
+        if includes(map(i, j).block, graph(map(x, y).block)) == false
+            graph(map(i, j).block) = [graph(map(i, j).block), graph(map(x, y).block);]
+        end
+    end
+end
+
 % updates the 'graph' variable using the 'map' matrix 
-function convert_to_graph()
+function convert_to_tree()
     % the idea is that we go through each layer of the matrix and update each index
     % we repeat this for 11 times because there are 11 layers
     for i = 1:11
         for j = 1:11
             % these if statements check if there is a wall on each side of the current index
             % it then updates the 'graph' variable
+            graph(map(i, j).block) = [];
             if map(i,j).n == false
-                graph(map(i,j).place) = [i,j+1];
+                checkrepeats(i, j, i, j+1)
             end
             if map(i,j).e == false
-                graph(map(i,j).place) = [i+1,j];
+                checkrepeats(i, j, i+1, j)
             end
             if map(i,j).s == false
-                graph(map(i,j).place) = [i,j-1];
+                checkrepeats(i, j, i, j-1)
             end
             if map(i,j).w == false
-                graph(map(i,j).place) = [i-1,j];
+                checkrepeats(i, j, i-1, j)
             end
         end
     end
@@ -202,26 +219,18 @@ end
 
 % function to find the path from the start to the end
 % returns b as a list format
-function b = find_path(graph, start, finish, paths)
-    % i cannot comment much on this because i don't understand it either.
-    path = paths + [start];
+function b = find_path(graph, start, finish, path)
+    path = [path, start];
     if start == finish
         b = path;
-    end
-    if not graph.has_key(start)
-        return;
-    end
-    for a = 0:length(values(graph, start))
-        temp = (graph(start));
-        disp(temp(a))
-        if includes(temp(a), path) == false
-            newpath = find_path(graph, a, finish, path=[]);
-            if ifempty(newpath) == false
-                b = newpath;
+    else
+        a = graph(start);
+        for i = 1:length(a)
+            if includes(a(i), path) == false
+                find_path(graph, a(i), finish, path);
             end
         end
     end
-    return;
 end
 
 % makes the robot go forward as long as there isn't red
