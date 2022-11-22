@@ -1,6 +1,7 @@
 % setup
 brick = ConnectBrick('EVAL');
-brick.SetColorMode(3,2);
+brick.SetColorMode(4, 2);
+brick.ColorCode(4);
 %%
 graph = containers.Map(1, [2, 3]);
 graph(2) = [3, 4];
@@ -27,7 +28,7 @@ forwardTime = 30;
 gapRed = 0.1;
 
 % how long to spin for a 90 degree turn
-spinLength = 2;
+spinLength = 0.7;
 % how fast to spin for a 90 degree turn
 spinSpeed = 30;
 
@@ -44,8 +45,8 @@ graph  = containers.Map();
 
 % keeps track of where each color is based on block number(block number is kept track by 'current' variabel)
 green = current;
-blue;
-yellow;
+blue = "";
+yellow = "";
 
 % used for while loops so that the same code will be run multiple times
 % NOTE THAT THERE WILL BE MORE 'TEST' VARIABLES BECAUSE NOT EVERYTHING CAN BE DONE IN ONE WHILE LOOP
@@ -70,21 +71,21 @@ map(1:11, 1:11) = cells;
 % main loops
 while test1 == true
     % we check the color of the current block and update the variables accordingly
-    checkColors();
+    checkColors(brick, green, blue);
     % saves the current block's info into the map matrix
-    saveinfo();
+    saveinfo(map, curx, cury, current, brick, wallDetectionDistance, spinSpeed, spinLength, curDirection);
     % turns the robot to face it so it follows the right wall
-    turn(turnDirection);
+    turn(brick, turnDirection(brick, wallDetectionDistance), spinSpeed, spinLength, curDirection);
     % robot moves forward and adds the counter variable 'current' by 1
-    goForward();
+    goForward(brick, curx, cury, wallDetectionDistance, curDirection);
     current = current + 1;
     % checks if the robot has reached the requirement for this test
-    if getColor() == 4
+    if brick.ColorCode(4) == 4
         test1 = false;
     end
 end
 
-function checkrepeats(i, j, x, y)
+function checkrepeats(graph, map, i, j, x, y)
     for i = 1:length(graph())
         if includes(map(i, j).block, graph(map(x, y).block)) == false
             graph(map(i, j).block) = [graph(map(i, j).block), graph(map(x, y).block);]
@@ -93,7 +94,7 @@ function checkrepeats(i, j, x, y)
 end
 
 % updates the 'graph' variable using the 'map' matrix 
-function convert_to_tree()
+function convert_to_tree(graph, map)
     % the idea is that we go through each layer of the matrix and update each index
     % we repeat this for 11 times because there are 11 layers
     for i = 1:11
@@ -118,18 +119,19 @@ function convert_to_tree()
 end
 
 % code to save the current block's info into the map matrix
-function saveinfo()
+function saveinfo(map, curx, cury, current, brick, wallDetectionDistance, spinSpeed, spinLength, curDirection)
+    global map;
     % the place attribute is equal to current(counter variable) because we need a way to create a key for the dictionary/hashmap
-    map(curx,cury).place = current;
-    map(curx, cury).n = getFront();
+    map(curx, cury).place = current;
+    map(curx, cury).n = getFront(brick, wallDetectionDistance);
     % we know that south must be true because the robot can only move forward so back must be open
     map(curx, cury).s = true;
-    map(curx, cury).e = getRight();
-    map(curx, cury).w = getLeft();
+    map(curx, cury).e = getRight(brick, wallDetectionDistance);
+    map(curx, cury).w = getLeft(brick, wallDetectionDistance, spinSpeed, spinLength, curDirection);
 end
 
 % code to check if there is a wall on a certain side of the robot using 'wallDetectionDistance' variable as the threshold
-function bool = getFront()
+function bool = getFront(brick, wallDetectionDistance)
     distance = brick.UltrasonicDist(3);
     if distance < wallDetectionDistance
         bool = true;
@@ -138,7 +140,7 @@ function bool = getFront()
     end
 end
 
-function bool = getRight()
+function bool = getRight(brick, wallDetectionDistance)
     distance = brick.UltrasonicDist(1);
     if distance < wallDetectionDistance
         bool = true;
@@ -147,9 +149,10 @@ function bool = getRight()
     end    
 end
 
-function bool = getLeft()
-    turn(3);
+function bool = getLeft(brick, wallDetectionDistance, spinSpeed, spinLength, curDirection)
+    turn(brick, 3, spinSpeed, spinLength, curDirection);
     distance = brick.UltrasonicDist(3);
+    turn(brick, 2, spinSpeed, spinLength, curDirection);
     if distance < wallDetectionDistance
         bool = true;
     else
@@ -158,19 +161,13 @@ function bool = getLeft()
 end
 
 
-% returns the color of the current block
-function c = getColor()
-    c = brick.ColorCode(4);
-end
-
-
 % checks of the current block is a certain color and updates the variables accordingly
 % also checks if the current block is red so that it stops right away. we might not need this 
-function checkColors()
+function checkColors(brick, green, blue)
     % check for colors: red, green, blue
     % need to make sure we can break test1 loop by changing the boolean
     % also need to make sure finish is set to current on 
-    if getColor == 5
+    if brick.ColorCode(4) == 5
         brick.StopAllMotors();
         pause(2);
         brick.MoveMotor('A', defaultSpeed);
@@ -178,23 +175,20 @@ function checkColors()
         pause(1);
         brick.StopAllMotors();
     end
-
-    if test1 == true
-        if getColor == 2
-            blue = current;
-        end
-        if getColor == 3
-            green = current;
-        end
+    if brick.ColorCode(4) == 2
+        blue = current;
+    end
+    if brick.ColorCode(4) == 3
+        green = current;
     end
 end
 
 % returns the direction the robot should turn to follow the right wall
 % this doesn't actually move the robot in any way
-function d = turnDirection()
-    if (getRight() == false)
+function d = turnDirection(brick, wallDetectionDistance)
+    if (getRight(brick, wallDetectionDistance) == false)
         d = 2;
-    elseif (getFront() == false)
+    elseif (getFront(brick, wallDetectionDistance) == false)
         d = 1;
     else
         d = 4;
@@ -222,6 +216,7 @@ end
 function b = find_path(graph, start, finish, path)
     path = [path, start];
     if start == finish
+        disp(path)
         b = path;
     else
         a = graph(start);
@@ -231,14 +226,17 @@ function b = find_path(graph, start, finish, path)
             end
         end
     end
+    b = path;
 end
 
 % makes the robot go forward as long as there isn't red
 % also updates the 'curx' and 'cury' variables based on the direction it faced before it moved forward
-function goForward()
-    if (getFront() == false)
-        for (i = 0:forwardTime)
-            if (getColor() == 5)
+function goForward(brick, curx, cury, wallDetectionDistance, curDirection)
+    defaultSpeed = 100;
+    gapRed = 0.1;
+    if (getFront(brick, wallDetectionDistance) == false)
+        for (i = 0:30)
+            if (brick.ColorCode(4) == 5)
                 brick.StopAllMotors();
                 pause(2);
                 brick.MoveMotor('A', defaultSpeed);
@@ -250,7 +248,8 @@ function goForward()
             pause(0.1);
         end
         brick.StopAllMotors();
-
+        global curx;
+        global cury;
         % updates 'curx' and 'cury' variables
         if curDirection == 1
             cury = cury + 1;
@@ -266,20 +265,21 @@ end
 
 % turns the robot to a certain direction with the parameter 'direction'
 % 1 is north, 2 is east, 3 is south, 4 is west
-function turn(direction)
+function turn(brick, direction, spinSpeed, spinLength, curDirection)
+    global curDirection;
     curDirection = direction;
     if (direction == 1)
         brick.MoveMotor('A', -spinSpeed);
         brick.MoveMotor('D', spinSpeed);
     elseif (direction == 2)
-        brick.MoveMotor('A', spinSpeed);
-        brick.MoveMotor('D', -spinSpeed);
+        brick.MoveMotor('A', -spinSpeed);
+        brick.MoveMotor('D', spinSpeed);
     elseif (direction == 3)
         brick.MoveMotor('A', -spinSpeed);
         brick.MoveMotor('D', spinSpeed);
     elseif (direction == 4)
-        brick.MoveMotor('A', spinSpeed);
-        brick.MoveMotor('D', -spinSpeed);
+        brick.MoveMotor('A', -spinSpeed);
+        brick.MoveMotor('D', spinSpeed);
     end
     pause(spinLength)
     brick.StopAllMotors();
