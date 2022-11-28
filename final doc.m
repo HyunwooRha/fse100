@@ -133,7 +133,17 @@ end
 % code to check if there is a wall on a certain side of the robot using 'wallDetectionDistance' variable as the threshold
 function bool = getFront(brick, wallDetectionDistance)
     distance = brick.UltrasonicDist(3);
-    if distance < wallDetectionDistance
+    distance2 = brick.UltrasonicDist(3);
+    distance3 = brick.UltrasonicDist(3);
+    distance4 = brick.UltrasonicDist(3);
+    distance5 = brick.UltrasonicDist(3);
+    distance6 = brick.UltrasonicDist(3);
+    distance7 = brick.UltrasonicDist(3);
+    distance8 = brick.UltrasonicDist(3);
+    distance9 = brick.UltrasonicDist(3);
+    distance10 = brick.UltrasonicDist(3);
+    average = (distance + distance2 + distance3 + distance4 + distance5 + distance6 + distance7 + distance8 + distance9 + distance10)/10;
+    if average < wallDetectionDistance
         bool = true;
     else
         bool = false;
@@ -142,7 +152,17 @@ end
 
 function bool = getRight(brick, wallDetectionDistance)
     distance = brick.UltrasonicDist(1);
-    if distance < wallDetectionDistance
+    distance2 = brick.UltrasonicDist(1);
+    distance3 = brick.UltrasonicDist(1);
+    distance4 = brick.UltrasonicDist(1);
+    distance5 = brick.UltrasonicDist(1);
+    distance6 = brick.UltrasonicDist(1);
+    distance7 = brick.UltrasonicDist(1);
+    distance8 = brick.UltrasonicDist(1);
+    distance9 = brick.UltrasonicDist(1);
+    distance10 = brick.UltrasonicDist(1);
+    average = (distance + distance2 + distance3 + distance4 + distance5 + distance6 + distance7 + distance8 + distance9 + distance10)/10;
+    if average < wallDetectionDistance
         bool = true;
     else
         bool = false;
@@ -152,12 +172,22 @@ end
 function bool = getLeft(brick, wallDetectionDistance, spinSpeed, spinLength, curDirection)
     turn(brick, 3, spinSpeed, spinLength, curDirection);
     distance = brick.UltrasonicDist(3);
-    turn(brick, 2, spinSpeed, spinLength, curDirection);
-    if distance < wallDetectionDistance
+    distance2 = brick.UltrasonicDist(3);
+    distance3 = brick.UltrasonicDist(3);
+    distance4 = brick.UltrasonicDist(3);
+    distance5 = brick.UltrasonicDist(3);
+    distance6 = brick.UltrasonicDist(3);
+    distance7 = brick.UltrasonicDist(3);
+    distance8 = brick.UltrasonicDist(3);
+    distance9 = brick.UltrasonicDist(3);
+    distance10 = brick.UltrasonicDist(3);
+    average = (distance + distance2 + distance3 + distance4 + distance5 + distance6 + distance7 + distance8 + distance9 + distance10)/10;
+    turn(brick, 2, spinSpeed, spinLength, curDirection); 
+    if average < wallDetectionDistance
         bool = true;
     else
         bool = false;
-    end    
+    end
 end
 
 
@@ -216,7 +246,6 @@ end
 function b = find_path(graph, start, finish, path)
     path = [path, start];
     if start == finish
-        disp(path)
         b = path;
     else
         a = graph(start);
@@ -226,7 +255,6 @@ function b = find_path(graph, start, finish, path)
             end
         end
     end
-    b = path;
 end
 
 % makes the robot go forward as long as there isn't red
