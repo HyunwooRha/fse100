@@ -52,6 +52,8 @@ yellow = "";
 % NOTE THAT THERE WILL BE MORE 'TEST' VARIABLES BECAUSE NOT EVERYTHING CAN BE DONE IN ONE WHILE LOOP
 test1 = true;
 test2 = true;
+test3 = true;
+test4 = true;
 
 % used to keep track of the pickup and dropped off state of the robot
 pickedup = false;
@@ -71,7 +73,71 @@ map(1:11, 1:11) = cells;
 % main loops
 while test1 == true
     % we check the color of the current block and update the variables accordingly
-    checkColors(brick, green, blue);
+    checkColors(brick, green, blue, yellow);
+    % saves the current block's info into the map matrix
+    saveinfo(map, curx, cury, current, brick, wallDetectionDistance, spinSpeed, spinLength, curDirection);
+    % turns the robot to face it so it follows the right wall
+    turn(brick, turnDirection(brick, wallDetectionDistance), spinSpeed, spinLength, curDirection);
+    % robot moves forward and adds the counter variable 'current' by 1
+    goForward(brick, curx, cury, wallDetectionDistance, curDirection);
+    current = current + 1;
+    % checks if the robot has reached the requirement for this test
+    if brick.ColorCode(4) == 2
+        test1 = false;
+    end
+end
+
+while test2
+    % adds delay to prevent overdoing sensors.
+    pause(.05);
+    % makes color sensor and you can call 'color' as keyword returning an
+    % int from 0-7
+    color = brick.ColorCode(3);
+    % displays the int value of the color
+    disp(color)
+    % keybinds
+    switch key
+        % arrow keys to move, z and x for clamps
+        case 'uparrow'
+            disp(key)
+            brick.MoveMotor('A', 500)
+            brick.MoveMotor('D', 500)
+        case 'downarrow'
+            disp(key)
+            brick.MoveMotor('A', -150);
+            brick.MoveMotor('D', -150);
+        case 'leftarrow'
+            disp(key)
+            brick.MoveMotor('D', 500);
+            brick.MoveMotor('A', -500);
+        case 'rightarrow'
+            disp(key)
+            brick.MoveMotor('A', 500);
+            brick.MoveMotor('D', -500);
+        case 'z'
+            % closes clamp
+            disp(key)
+            brick.MoveMotor('B', -50);
+        case 'x'
+            % opens clamp
+            brick.MoveMotor('B', 50);
+
+        case 'q'
+            % exits loop
+            disp(key)
+            test2 = false;
+        otherwise
+            % change Coast to 'Brake' for a break effect
+            brick.StopAllMotors('Coast');
+            
+    end
+    
+end
+
+
+while test3 == true
+    % we check the color of the current block and update the variables accordingly
+    checkColors(brick, green, blue, yellow);
     % saves the current block's info into the map matrix
     saveinfo(map, curx, cury, current, brick, wallDetectionDistance, spinSpeed, spinLength, curDirection);
     % turns the robot to face it so it follows the right wall
@@ -81,8 +147,55 @@ while test1 == true
     current = current + 1;
     % checks if the robot has reached the requirement for this test
     if brick.ColorCode(4) == 4
-        test1 = false;
+        test3 = false;
     end
+end
+
+while test4
+    % adds delay to prevent overdoing sensors.
+    pause(.05);
+    % makes color sensor and you can call 'color' as keyword returning an
+    % int from 0-7
+    color = brick.ColorCode(3);
+    % displays the int value of the color
+    disp(color)
+    % keybinds
+    switch key
+        % arrow keys to move, z and x for clamps
+        case 'uparrow'
+            disp(key)
+            brick.MoveMotor('A', 500)
+            brick.MoveMotor('D', 500)
+        case 'downarrow'
+            disp(key)
+            brick.MoveMotor('A', -150);
+            brick.MoveMotor('D', -150);
+        case 'leftarrow'
+            disp(key)
+            brick.MoveMotor('D', 500);
+            brick.MoveMotor('A', -500);
+        case 'rightarrow'
+            disp(key)
+            brick.MoveMotor('A', 500);
+            brick.MoveMotor('D', -500);
+        case 'z'
+            % closes clamp
+            disp(key)
+            brick.MoveMotor('B', -50);
+        case 'x'
+            % opens clamp
+            brick.MoveMotor('B', 50);
+
+        case 'q'
+            % exits loop
+            disp(key)
+            test4 = false;
+        otherwise
+            % change Coast to 'Brake' for a break effect
+            brick.StopAllMotors('Coast');
+            
+    end
+    
 end
 
 function checkrepeats(graph, map, i, j, x, y)
@@ -193,7 +306,7 @@ end
 
 % checks of the current block is a certain color and updates the variables accordingly
 % also checks if the current block is red so that it stops right away. we might not need this 
-function checkColors(brick, green, blue)
+function checkColors(brick, green, blue, yellow)
     % check for colors: red, green, blue
     % need to make sure we can break test1 loop by changing the boolean
     % also need to make sure finish is set to current on 
@@ -208,8 +321,8 @@ function checkColors(brick, green, blue)
     if brick.ColorCode(4) == 2
         blue = current;
     end
-    if brick.ColorCode(4) == 3
-        green = current;
+    if brick.ColorCode(4) == 4
+        yellow = current;
     end
 end
 
