@@ -1,0 +1,336 @@
+brick = ConnectBrick('EVAL');
+brick.SetColorMode(4, 2);
+brick.ColorCode(4);
+%%
+test1 = true;
+% distance = 0;
+% distance2 = 0;
+
+move = "";
+
+while test1
+
+    color = brick.ColorCode(4);
+    
+    if color == 5
+        brick.StopAllMotors();
+        
+        pause(3);
+        
+        brick.MoveMotorAngleRel('A',20, 300,'Brake');
+        brick.MoveMotorAngleRel('D',20, 300,'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        
+        pause(2);
+        
+        brick.StopAllMotors();
+
+    end
+    
+    if color == 2
+        test1 = false;
+        disp("test 1 is over")
+        break;
+    end
+
+    right = [];
+    front = [];
+    
+    for x=0:40
+        right = [right, brick.UltrasonicDist(1)];
+        front = [front, brick.UltrasonicDist(3)];
+    end
+    
+    right = sort(right);
+    front = sort(front);
+    
+    disp("front : " + front(10));
+    disp("right : " + right(10));
+
+    if front(10) < 10
+        brick.MoveMotorAngleRel('A', -10, 163, 'Brake');
+        brick.MoveMotorAngleRel('D', -10, 163, 'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        pause(1);
+    end
+    disp("front : " + front(10));
+    if  right(10) > 40
+        move = "right";        
+        brick.StopAllMotors();
+        brick.MoveMotorAngleRel('A', -10, 163,'Brake');
+        brick.MoveMotorAngleRel('D', 10, 163,'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        pause(1);
+        brick.StopAllMotors();
+
+
+    elseif front(10) > 40
+
+        for x = 0:10
+            brick.ColorCode(4);
+        end
+
+        if brick.ColorCode(4) == 5
+            brick.StopAllMotors();
+            pause(3);
+            brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+            brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+            brick.WaitForMotor('A');
+            brick.WaitForMotor('D');
+            pause(1);
+            brick.StopAllMotors();
+            
+        end
+        brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+        brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+
+    else
+        
+        brick.MoveMotorAngleRel('A', 11, 163, 'Brake');
+        brick.MoveMotorAngleRel('D', -10, 163, 'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        
+        pause(1);
+        
+        brick.StopAllMotors();
+    end
+
+    if move == "right"
+        move = "";
+        
+        front = [];
+   
+        for x=0:40
+            front = [front, brick.UltrasonicDist(3)];
+        end
+        
+        front = sort(front);
+        if front(10) > 30
+            for x = 0:3
+                for i = 0:10
+                    brick.ColorCode(4);
+                end
+    
+                if brick.ColorCode(4) == 5
+                    brick.StopAllMotors();
+                    pause(3);
+                    brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+                    brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+                    brick.WaitForMotor('A');
+                    brick.WaitForMotor('D');
+                end
+                
+                brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+                brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+                brick.WaitForMotor('A');
+                brick.WaitForMotor('D');
+                pause(1);
+            end
+        end
+    end
+    
+    for x = 0:10
+        brick.ColorCode(4)
+    end
+    
+    if brick.ColorCode(4) == 2
+        disp("test 1 over")
+        test1 = false;
+        break
+    end
+
+end
+
+%%
+global key;
+InitKeyboard();
+
+test2 = true;
+while test2
+    % adds delay to prevent overdoing sensors.
+    pause(.05);
+    % makes color sensor and you can call 'color' as keyword returning an
+    % keybinds
+    switch key
+        % arrow keys to move, z and x for clamps
+        case 'uparrow'
+            disp(key)
+            brick.MoveMotor('A', 30)
+            brick.MoveMotor('D', 30)
+        case 'downarrow'
+            disp(key)
+            brick.MoveMotor('A', -30);
+            brick.MoveMotor('D', -30);
+        case 'leftarrow'
+            disp(key)
+            brick.MoveMotor('D', -30);
+            brick.MoveMotor('A', 30);
+        case 'rightarrow'
+            disp(key)
+            brick.MoveMotor('A', -30);
+            brick.MoveMotor('D', 30);
+        case 'z'
+            % closes clamp
+            disp(key)
+            brick.MoveMotor('B', -50);
+        case 'x'
+            % opens clamp
+            brick.MoveMotor('B', 50);
+
+        case 'q'
+            % exits loop
+            disp("test 2 over")
+            test2 = false;
+
+        otherwise
+            % change Coast to 'Brake' for a break effect
+            brick.StopAllMotors('Coast');        
+    end
+end
+
+%%
+test3 = true;
+while test3
+
+    color = brick.ColorCode(4);
+    
+    if color == 5
+        brick.StopAllMotors();
+        
+        pause(3);
+        
+        brick.MoveMotorAngleRel('A',20, 300,'Brake');
+        brick.MoveMotorAngleRel('D',20, 300,'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        
+        pause(2);
+        
+        brick.StopAllMotors();
+
+    end
+    
+    if color == 4
+        test3 = false;
+        disp("test 3 is over")
+        break;
+    end
+
+    right = [];
+    front = [];
+    
+    for x=0:40
+        right = [right, brick.UltrasonicDist(1)];
+        front = [front, brick.UltrasonicDist(3)];
+    end
+    
+    right = sort(right);
+    front = sort(front);
+    
+    disp("front : " + front(10));
+    disp("right : " + right(10));
+
+    if front(10) < 10
+        brick.MoveMotorAngleRel('A', -10, 163, 'Brake');
+        brick.MoveMotorAngleRel('D', -10, 163, 'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        pause(1);
+    end
+    disp("front : " + front(10));
+    if  right(10) > 40
+        move = "right";        
+        brick.StopAllMotors();
+        brick.MoveMotorAngleRel('A', -10, 163,'Brake');
+        brick.MoveMotorAngleRel('D', 10, 163,'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        pause(1);
+        brick.StopAllMotors();
+
+
+    elseif front(10) > 40
+
+        for x = 0:10
+            brick.ColorCode(4);
+        end
+
+        if brick.ColorCode(4) == 5
+            brick.StopAllMotors();
+            pause(3);
+            brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+            brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+            brick.WaitForMotor('A');
+            brick.WaitForMotor('D');
+            pause(1);
+            brick.StopAllMotors();
+            
+        end
+        brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+        brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+
+    else
+        
+        brick.MoveMotorAngleRel('A', 11, 163, 'Brake');
+        brick.MoveMotorAngleRel('D', -10, 163, 'Brake');
+        brick.WaitForMotor('A');
+        brick.WaitForMotor('D');
+        
+        pause(1);
+        
+        brick.StopAllMotors();
+    end
+
+    if move == "right"
+        move = "";
+        
+        front = [];
+   
+        for x=0:40
+            front = [front, brick.UltrasonicDist(3)];
+        end
+        
+        front = sort(front);
+        if front(10) > 30
+            for x = 0:3
+                for i = 0:10
+                    brick.ColorCode(4);
+                end
+    
+                if brick.ColorCode(4) == 5
+                    brick.StopAllMotors();
+                    pause(3);
+                    brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+                    brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+                    brick.WaitForMotor('A');
+                    brick.WaitForMotor('D');
+                end
+                
+                brick.MoveMotorAngleRel('A', 30, 300,'Brake');
+                brick.MoveMotorAngleRel('D', 30, 300,'Brake');
+                brick.WaitForMotor('A');
+                brick.WaitForMotor('D');
+                pause(1);
+            end
+        end
+    end
+    
+    for x = 0:10
+        brick.ColorCode(4)
+    end
+    
+    if brick.ColorCode(4) == 4
+        disp("test 3 over")
+        test3 = false;
+        break
+    end
+
+end
