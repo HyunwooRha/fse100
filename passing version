@@ -218,6 +218,9 @@ while test3
     
     if color == 4
         test3 = false;
+        brick.MoveMotor('B', 50);
+        pause(5);
+        brick.StopAllMotors();
         disp("test 3 is over")
         break;
     end
@@ -330,6 +333,9 @@ while test3
     if brick.ColorCode(4) == 4
         disp("test 3 over")
         test3 = false;
+        brick.MoveMotor('B', 50);
+        pause(5);
+        brick.StopAllMotors();
         break
     end
 
